@@ -1,7 +1,10 @@
 #R Google Analytics with a for loop to run through all the properties!!
 
-install.packages("RCurl")
-install.packages("rjson")
+#install.packages("RCurl")
+#install.packages("rjson")
+
+require("RCurl")
+require("rjson")
 
 library("RGoogleAnalytics", lib.loc="C:/Users/jglenn/Documents/R/win-library/3.0")
 
@@ -55,6 +58,10 @@ ga.profiles
 #I need to try this next, i think this will work  :) 
 # Step 4. Setting up the input parameters
 
+filter.mobileSite <- "ga:hostName=~^m\\."
+filter.desktopSite <- "ga:hostname!~siteencore\\.com|^m\\."
+
+
 ga.data <- NULL
 uri <- NULL
 df <- NULL
@@ -62,42 +69,42 @@ df <- NULL
 for (i in 1:nrow(ga.profiles)) {
   tryCatch({
     
-  profile <- ga.profiles$id[i] 
-  startdate <- "2013-11-01"
-  enddate <- "2013-11-30"
-  dimension <- NULL
-  metric <- "ga:pageViews, ga:visits, ga:visitors"
-  filter <- NULL
-  segment <- NULL
-  sort <- "-ga:visits"
-  maxresults <- 99
-  
-  
-  # Step 5. Build the query string, use the profile by setting its index value 
-  query$Init(start.date = startdate,
-             end.date = enddate,
-             dimensions = dimension,
-             metrics = metric,
-             sort = sort,
-             filters= filter,
-             segment=segment,
-             max.results = maxresults,
-             table.id = paste("ga:",profile,sep="",collapse=","),
-             access_token=access_token)
-  
-  # Step 6. Make a request to get the data from the API
-  ga.data <- ga$GetReportData(query)
-  
-  df <- rbind(df, ga.data )
-  
-  
-  #If you want to see the final generated URL, use:
-  #uri[i] <- query$to.uri()
-  
-  
+    profile <- ga.profiles$id[i] 
+    startdate <- "2013-04-01"
+    enddate <- "2013-04-30"
+    dimension <- NULL
+    metric <- "ga:visitors, ga:pageViews, ga:visits, ga:timeOnSite, ga:avgTimeOnSite"
+    filter <- filter.desktopSite
+    segment <- NULL
+    sort <- "-ga:visits"
+    maxresults <- 99
+    
+    
+    # Step 5. Build the query string, use the profile by setting its index value 
+    query$Init(start.date = startdate,
+               end.date = enddate,
+               dimensions = dimension,
+               metrics = metric,
+               sort = sort,
+               filters= filter,
+               segment=segment,
+               max.results = maxresults,
+               table.id = paste("ga:",profile,sep="",collapse=","),
+               access_token=access_token)
+    
+    # Step 6. Make a request to get the data from the API
+    ga.data <- ga$GetReportData(query)
+    
+    ga.data <- cbind(ga.webProperty[i,], ga.data)
+    
+    df <- rbind(df, ga.data )
+    
+    
+    #If you want to see the final generated URL, use:
+    #uri[i] <- query$to.uri()
+    
+    
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
 
-
-write.csv(ga.webProperty, file = "ga.WebProperty.csv")
-
+write.csv(df, file = "RGA df.csv")
