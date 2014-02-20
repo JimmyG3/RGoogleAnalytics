@@ -66,12 +66,12 @@ ga.data <- NULL
 uri <- NULL
 df <- NULL
 
-for (i in 1:nrow(ga.profiles)) {
+for (i in 1:nrow(profiles.desktop)) {
   tryCatch({
     
-    profile <- ga.profiles$id[i] 
-    startdate <- "2013-04-01"
-    enddate <- "2013-04-30"
+    profile <- profiles.desktop$id[i] 
+    startdate <- "2013-06-01"
+    enddate <- "2013-06-30"
     dimension <- NULL
     metric <- "ga:visitors, ga:pageViews, ga:visits, ga:timeOnSite, ga:avgTimeOnSite"
     filter <- filter.desktopSite
@@ -95,7 +95,7 @@ for (i in 1:nrow(ga.profiles)) {
     # Step 6. Make a request to get the data from the API
     ga.data <- ga$GetReportData(query)
     
-    ga.data <- cbind(ga.webProperty[i,], ga.data)
+    ga.data <- cbind(profiles.desktop[i,], ga.data)
     
     df <- rbind(df, ga.data )
     
@@ -107,4 +107,14 @@ for (i in 1:nrow(ga.profiles)) {
   }, error=function(e){cat("ERROR :",conditionMessage(e), "\n")})
 }
 
-write.csv(df, file = "RGA df.csv")
+
+c("startdate: ", startdate)
+c("enddate: ", enddate)
+c("Filter: ", filter)
+
+
+cat("Please enter a file name ...")
+filename <- readLines(con="stdin", 1)
+cat(fil, "\n")
+
+write.csv(df, file = paste(filename, "csv", sep="."))
